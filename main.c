@@ -15,38 +15,9 @@
 #define CELL_SIZE  20
 #define CELL_COLOR 32, 32, 32, 255
 
-#define MAX_CELLS (GRID_MAX_WIDTH / CELL_SIZE) * (GRID_MAX_HEIGHT / CELL_SIZE)
-
-/*
-    Cell grid[WIDTH / CELL_SIZE][HEIGHT / CELL_SIZE];
-    int w_size;
-    int h_size;
-
-    printf("Building grid\n");
-    for (int i = 0; i < WIDTH; i += CELL_SIZE)
-    {
-        for (int j = 0; j < WIDTH; j += CELL_SIZE)
-        {
-            Cell cell                          = {.x = i, .y = j};
-            grid[i / CELL_SIZE][j / CELL_SIZE] = cell;
-            printf("cell: row: %i, col: %i\n", i / CELL_SIZE, j / CELL_SIZE);
-        }
-        w_size++;
-        h_size++;
-    }
-    printf("Done\n");
-
-    printf("w_size: %i, h_size: %i\n", w_size, h_size);
-
-    for (int i = 0; i < w_size; ++i)
-    {
-        for (int j = 0; j < h_size; ++j)
-        {
-            printf("#");
-        }
-        printf("\n");
-    }
-*/
+#define MAX_CELLS   (GRID_MAX_WIDTH / CELL_SIZE) * (GRID_MAX_HEIGHT / CELL_SIZE)
+#define MAX_ROWS    GRID_MAX_HEIGHT / CELL_SIZE - 1
+#define MAX_COLUMNS GRID_MAX_WIDTH / CELL_SIZE - 1
 
 typedef struct
 {
@@ -100,12 +71,12 @@ void save_point(Cell **points, int *points_size, int x, int y)
 
 void build_grid(Cells *cells)
 {
-    for (int i = GRID_MIN_WIDTH; i < GRID_MAX_WIDTH; i += CELL_SIZE)
+    for (int col = GRID_MIN_WIDTH; col < GRID_MAX_WIDTH; col += CELL_SIZE)
     {
-        for (int j = GRID_MIN_WIDTH; j < GRID_MAX_WIDTH; j += CELL_SIZE)
+        for (int row = GRID_MIN_WIDTH; row < GRID_MAX_WIDTH; row += CELL_SIZE)
         {
-            Cell cell                                 = {.x = i, .y = j};
-            cells->grid[i / CELL_SIZE][j / CELL_SIZE] = cell;
+            Cell cell = {.x = col, .y = row};
+            cells->grid[row / CELL_SIZE][col / CELL_SIZE] = cell;
         }
         cells->size.w++;
         cells->size.h++;
@@ -114,11 +85,11 @@ void build_grid(Cells *cells)
 
 void draw_grid(SDL_Renderer *ren, Cells *cells)
 {
-    for (int i = 0; i < cells->size.w; ++i)
+    for (int col = 0; col < cells->size.w; ++col)
     {
-        for (int j = 0; j < cells->size.h; ++j)
+        for (int row = 0; row < cells->size.h; ++row)
         {
-            Cell cell = cells->grid[i][j];
+            Cell cell = cells->grid[row][col];
 
             SDL_Rect rect = {
                 .x = cell.x, .y = cell.y, .w = CELL_SIZE, .h = CELL_SIZE};
@@ -178,7 +149,6 @@ int main()
     {
         while (SDL_PollEvent(&event))
         {
-            // FIXME: player out of bounds
             switch (event.type)
             {
                 case SDL_QUIT:
@@ -192,24 +162,52 @@ int main()
                     // Move up
                     if (event.key.keysym.sym == 'k')
                     {
-                        player.row--;
+                        if (player.row == 0)
+                        {
+                            player.row = MAX_ROWS;
+                        }
+                        else
+                        {
+                            player.row--;
+                        }
                     }
                     // Move down
                     if (event.key.keysym.sym == 'j')
                     {
-                        player.row++;
+                        if (player.row == MAX_ROWS)
+                        {
+                            player.row = 0;
+                        }
+                        else
+                        {
+                            player.row++;
+                        }
                     }
                     // Move left
                     // FIXME: If GRID_MAX_WIDTH and GRID_MAX_HEIGHT are not 800
                     //       going left or right skips one cell
                     if (event.key.keysym.sym == 'h')
                     {
-                        player.column--;
+                        if (player.column == 0)
+                        {
+                            player.column = MAX_COLUMNS;
+                        }
+                        else
+                        {
+                            player.column--;
+                        }
                     }
                     // Move right
                     if (event.key.keysym.sym == 'l')
                     {
-                        player.column++;
+                        if (player.column == MAX_COLUMNS)
+                        {
+                            player.column = 0;
+                        }
+                        else
+                        {
+                            player.column++;
+                        }
                     }
                     if (event.key.keysym.sym == 's')
                     {
@@ -228,18 +226,19 @@ int main()
             }
         }
 
-        player.rect.x = cells.grid[player.column][player.row].x;
-        player.rect.y = cells.grid[player.column][player.row].y;
+        printf("player:r(%i)c(%i)\n", player.row, player.column);
+        player.rect.x = cells.grid[player.row][player.column].x;
+        player.rect.y = cells.grid[player.row][player.column].y;
 
         int mouse_x, mouse_y;
         Uint32 buttons   = SDL_GetMouseState(&mouse_x, &mouse_y);
         SDL_Point cursor = {mouse_x, mouse_y};
 
-        for (int i = 0; i < cells.size.w; ++i)
+        for (int col = 0; col < cells.size.w; ++col)
         {
-            for (int j = 0; j < cells.size.h; ++j)
+            for (int row = 0; row < cells.size.h; ++row)
             {
-                Cell cell = cells.grid[i][j];
+                Cell cell = cells.grid[row][col];
 
                 SDL_Rect rect = {
                     .x = cell.x, .y = cell.y, .w = CELL_SIZE, .h = CELL_SIZE};
