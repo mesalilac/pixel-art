@@ -39,7 +39,11 @@ typedef struct
 {
     int row;
     int column;
-    SDL_Rect rect;
+} GridPos;
+
+typedef struct
+{
+    GridPos grid_pos;
 } Player;
 
 bool point_exists(Cell **points, int *points_size, Cell *cell)
@@ -136,13 +140,7 @@ int main()
     int points_size = 0;
 
     Player player = {
-        .row    = 0,
-        .column = 0,
-        .rect   = {
-                   .x = cells.grid[0][0].x,
-                   .y = cells.grid[0][0].y,
-                   .w = CELL_SIZE,
-                   .h = CELL_SIZE}
+        .grid_pos = {.row = 0, .column = 0}
     };
 
     while (is_running)
@@ -157,30 +155,40 @@ int main()
                 case SDL_KEYDOWN:
                     if (saving == true)
                         save_point(
-                            points, &points_size, player.rect.x, player.rect.y
+                            points,
+                            &points_size,
+                            cells
+                                .grid[player.grid_pos.row]
+                                     [player.grid_pos.column]
+                                .x,
+
+                            cells
+                                .grid[player.grid_pos.row]
+                                     [player.grid_pos.column]
+                                .y
                         );
                     // Move up
                     if (event.key.keysym.sym == 'k')
                     {
-                        if (player.row == 0)
+                        if (player.grid_pos.row == 0)
                         {
-                            player.row = MAX_ROWS;
+                            player.grid_pos.row = MAX_ROWS;
                         }
                         else
                         {
-                            player.row--;
+                            player.grid_pos.row--;
                         }
                     }
                     // Move down
                     if (event.key.keysym.sym == 'j')
                     {
-                        if (player.row == MAX_ROWS)
+                        if (player.grid_pos.row == MAX_ROWS)
                         {
-                            player.row = 0;
+                            player.grid_pos.row = 0;
                         }
                         else
                         {
-                            player.row++;
+                            player.grid_pos.row++;
                         }
                     }
                     // Move left
@@ -188,31 +196,41 @@ int main()
                     //       going left or right skips one cell
                     if (event.key.keysym.sym == 'h')
                     {
-                        if (player.column == 0)
+                        if (player.grid_pos.column == 0)
                         {
-                            player.column = MAX_COLUMNS;
+                            player.grid_pos.column = MAX_COLUMNS;
                         }
                         else
                         {
-                            player.column--;
+                            player.grid_pos.column--;
                         }
                     }
                     // Move right
                     if (event.key.keysym.sym == 'l')
                     {
-                        if (player.column == MAX_COLUMNS)
+                        if (player.grid_pos.column == MAX_COLUMNS)
                         {
-                            player.column = 0;
+                            player.grid_pos.column = 0;
                         }
                         else
                         {
-                            player.column++;
+                            player.grid_pos.column++;
                         }
                     }
                     if (event.key.keysym.sym == 's')
                     {
                         save_point(
-                            points, &points_size, player.rect.x, player.rect.y
+                            points,
+                            &points_size,
+                            cells
+                                .grid[player.grid_pos.row]
+                                     [player.grid_pos.column]
+                                .x,
+
+                            cells
+                                .grid[player.grid_pos.row]
+                                     [player.grid_pos.column]
+                                .y
                         );
                         saving = true;
                     }
@@ -226,9 +244,9 @@ int main()
             }
         }
 
-        printf("player:r(%i)c(%i)\n", player.row, player.column);
-        player.rect.x = cells.grid[player.row][player.column].x;
-        player.rect.y = cells.grid[player.row][player.column].y;
+        printf(
+            "player:r(%i)c(%i)\n", player.grid_pos.row, player.grid_pos.column
+        );
 
         int mouse_x, mouse_y;
         Uint32 buttons   = SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -267,8 +285,13 @@ int main()
             SDL_RenderFillRect(ren, &rect);
         }
 
+        SDL_Rect player_rect = {
+            .x = cells.grid[player.grid_pos.row][player.grid_pos.column].x,
+            .y = cells.grid[player.grid_pos.row][player.grid_pos.column].y,
+            .w = CELL_SIZE,
+            .h = CELL_SIZE};
         SDL_SetRenderDrawColor(ren, 200, 0, 0, 255);
-        SDL_RenderFillRect(ren, &player.rect);
+        SDL_RenderFillRect(ren, &player_rect);
 
         SDL_RenderPresent(ren);
     }
