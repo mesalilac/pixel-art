@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+// TODO: Take screenshort of the current points export as png
+
 #define WIDTH            800
 #define HEIGHT           800
 #define BACKGROUND_COLOR 28, 28, 28, 255
