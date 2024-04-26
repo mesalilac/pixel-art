@@ -139,7 +139,7 @@ void draw_grid(SDL_Renderer *ren, Cells *cells)
     }
 }
 
-void draw_main_bar(
+void draw_color_blocks(
     SDL_Renderer *ren,
     BrushColors *brush_colors,
     Uint32 buttons,
@@ -427,8 +427,7 @@ int main()
 
         draw_grid(ren, &cells);
 
-        draw_main_bar(ren, &brush_colors, buttons, cursor);
-
+        draw_color_blocks(ren, &brush_colors, buttons, cursor);
         draw_info(ren, font, &cells, points_size, mouse_x, mouse_y);
 
         for (int i = 0; i < points_size; ++i)
