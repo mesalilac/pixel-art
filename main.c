@@ -5,11 +5,14 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "include/libattopng.h"
+
 // TODO: Increase and dicrease brush size
 // TODO: row 0 is (0,0) even when GRID_MIN_HEIGHT is 80
 // TODO: select area click #1 cell and #2 cell and all cells inbetween are
 //       selected
-// TODO: Take screenshort of the current points export as png
+
+#define RGBA(r, g, b, a) ((r) | ((g) << 8) | ((b) << 16) | ((a) << 24))
 
 #define WIDTH            800
 #define HEIGHT           800
@@ -264,6 +267,67 @@ void draw_info(
     }
 }
 
+void save_as_png(Point **points, int points_size)
+{
+    char *file_name = malloc(128 * sizeof(char));
+
+    time_t t     = time(NULL);
+    struct tm tm = *localtime(&t);
+    sprintf(
+        file_name,
+        "image-%i-%i:%i:%i.png",
+        tm.tm_mday,
+        tm.tm_hour,
+        tm.tm_min,
+        tm.tm_sec
+    );
+    printf("Saving image to '%s'\n", file_name);
+
+    int width  = GRID_MAX_WIDTH;
+    int height = GRID_MAX_HEIGHT;
+
+    libattopng_t *png = libattopng_new(width, height, PNG_RGBA);
+
+    int x, y;
+    for (y = 0; y < height; ++y)
+    {
+        for (x = 0; x < width; ++x)
+        {
+            bool pixel_not_empty = false;
+            for (int i = 0; i < points_size; ++i)
+            {
+                Point *point = points[i];
+                if ((point->x >= x && point->x <= x + CELL_SIZE) &&
+                    (point->y >= y && point->y <= y + CELL_SIZE))
+                {
+                    libattopng_set_pixel(
+                        png,
+                        x,
+                        y,
+                        RGBA(
+                            point->color.r,
+                            point->color.g,
+                            point->color.b,
+                            point->color.a
+                        )
+                    );
+
+                    pixel_not_empty = true;
+                }
+            }
+
+            if (!pixel_not_empty)
+            {
+                libattopng_set_pixel(png, x, y, RGBA(28, 28, 28, 255));
+            }
+        }
+    }
+
+    libattopng_save(png, file_name);
+    libattopng_destroy(png);
+    free(file_name);
+}
+
 int main()
 {
     srand(time(0));
@@ -386,6 +450,10 @@ int main()
                         {
                             brush_colors.selected++;
                         }
+                    }
+                    if (event.key.keysym.sym == 's')
+                    {
+                        save_as_png(points, points_size);
                     }
                     break;
             }
