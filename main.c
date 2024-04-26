@@ -101,7 +101,6 @@ void save_point(
 
     points[*points_size] = point;
     *points_size += 1;
-    printf("x: %i, y: %i, color_selected: %i\n", x, y, brush_colors->selected);
 }
 
 void build_grid(Cells *cells)
