@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+// TODO: Increase and dicrease brush size
 // TODO: row 0 is (0,0) even when GRID_MIN_HEIGHT is 80
 // TODO: select area click #1 cell and #2 cell and all cells inbetween are
 //       selected
