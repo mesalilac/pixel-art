@@ -108,7 +108,7 @@ void build_grid(Cells *cells)
 {
     for (int col = GRID_MIN_WIDTH; col < GRID_MAX_WIDTH; col += CELL_SIZE)
     {
-        for (int row = GRID_MIN_WIDTH; row < GRID_MAX_WIDTH; row += CELL_SIZE)
+        for (int row = GRID_MIN_HEIGHT; row < GRID_MAX_HEIGHT; row += CELL_SIZE)
         {
             Cell cell = {.x = col, .y = row};
             cells->grid[row / CELL_SIZE][col / CELL_SIZE] = cell;
