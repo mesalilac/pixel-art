@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+// TODO: row 0 is (0,0) even when GRID_MIN_HEIGHT is 80
+// TODO: select area click #1 cell and #2 cell and all cells inbetween are
+//       selected
 // TODO: Take screenshort of the current points export as png
 
 #define WIDTH            800
@@ -11,7 +14,7 @@
 #define BACKGROUND_COLOR 28, 28, 28, 255
 
 #define GRID_MIN_WIDTH  0
-#define GRID_MIN_HEIGHT 0
+#define GRID_MIN_HEIGHT 80
 #define GRID_MAX_WIDTH  WIDTH
 #define GRID_MAX_HEIGHT HEIGHT
 #define GRID_COLOR      32, 32, 32, 255
@@ -134,6 +137,48 @@ void draw_grid(SDL_Renderer *ren, Cells *cells)
     }
 }
 
+void draw_main_bar(
+    SDL_Renderer *ren,
+    BrushColors *brush_colors,
+    Uint32 buttons,
+    SDL_Point cursor
+)
+{
+    int padding = 10;
+    int x       = padding;
+    int y       = padding;
+
+    for (int i = 0; i < brush_colors->size; ++i)
+    {
+        SDL_Color color = brush_colors->colors[i];
+
+        SDL_Rect rect = {.x = x, .y = y, .w = CELL_SIZE, .h = CELL_SIZE};
+
+        if (brush_colors->selected == i)
+        {
+            SDL_Rect selected_rect = {
+                .x = rect.x - padding / 2,
+                .y = rect.y - padding / 2,
+                .w = CELL_SIZE + padding,
+                .h = CELL_SIZE + padding};
+
+            SDL_SetRenderDrawColor(ren, 255, 0, 0, 0);
+            SDL_RenderDrawRect(ren, &selected_rect);
+        }
+
+        SDL_SetRenderDrawColor(ren, color.r, color.g, color.b, color.a);
+        SDL_RenderFillRect(ren, &rect);
+
+        if (SDL_PointInRect(&cursor, &rect) &&
+            (buttons & SDL_BUTTON_LMASK) != 0)
+        {
+            brush_colors->selected = i;
+        }
+
+        x += padding + CELL_SIZE;
+    }
+}
+
 int main()
 {
     srand(time(0));
@@ -172,7 +217,9 @@ int main()
     int points_size = 0;
 
     Brush brush = {
-        .grid_pos = {.row = 0, .column = 0}
+        .grid_pos = {
+                     .row    = GRID_MIN_HEIGHT / CELL_SIZE,
+                     .column = GRID_MIN_WIDTH / CELL_SIZE}
     };
 
     BrushColors brush_colors = {.size = 0, .selected = 0};
@@ -355,6 +402,8 @@ int main()
         SDL_RenderClear(ren);
 
         draw_grid(ren, &cells);
+
+        draw_main_bar(ren, &brush_colors, buttons, cursor);
 
         for (int i = 0; i < points_size; ++i)
         {
