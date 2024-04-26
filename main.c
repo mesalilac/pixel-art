@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -180,6 +181,89 @@ void draw_main_bar(
     }
 }
 
+void draw_info(
+    SDL_Renderer *ren,
+    TTF_Font *font,
+    Cells *cells,
+    int points_size,
+    int mouse_x,
+    int mouse_y
+)
+{
+    int padding = 10;
+    int x       = 5;
+    int y       = CELL_SIZE + padding * 2;
+
+    {
+        char *text = malloc(50 * sizeof(char));
+        sprintf(text, "rows/columns: %i/%i", cells->size.h, cells->size.w);
+
+        SDL_Surface *surface =
+            TTF_RenderText_Blended(font, text, (SDL_Color){255, 255, 255, 255});
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, surface);
+
+        SDL_Rect rect = {.x = x, .y = y, .w = surface->w, .h = surface->h};
+
+        SDL_RenderCopy(ren, texture, NULL, &rect);
+
+        SDL_SetRenderDrawColor(ren, BACKGROUND_COLOR);
+        SDL_RenderDrawRect(ren, &rect);
+
+        x += surface->w + padding;
+
+        free(surface);
+        SDL_DestroyTexture(texture);
+
+        free(text);
+    }
+
+    {
+        char *text = malloc(50 * sizeof(char));
+        sprintf(text, "Total points: %i", points_size);
+
+        SDL_Surface *surface =
+            TTF_RenderText_Blended(font, text, (SDL_Color){255, 255, 255, 255});
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, surface);
+
+        SDL_Rect rect = {.x = x, .y = y, .w = surface->w, .h = surface->h};
+
+        SDL_RenderCopy(ren, texture, NULL, &rect);
+
+        SDL_SetRenderDrawColor(ren, BACKGROUND_COLOR);
+        SDL_RenderDrawRect(ren, &rect);
+
+        x += surface->w + padding;
+
+        free(surface);
+        SDL_DestroyTexture(texture);
+
+        free(text);
+    }
+
+    {
+        char *text = malloc(50 * sizeof(char));
+        sprintf(text, "%ix%i", mouse_x, mouse_y);
+
+        SDL_Surface *surface =
+            TTF_RenderText_Blended(font, text, (SDL_Color){255, 255, 255, 255});
+        SDL_Texture *texture = SDL_CreateTextureFromSurface(ren, surface);
+
+        SDL_Rect rect = {.x = x, .y = y, .w = surface->w, .h = surface->h};
+
+        SDL_RenderCopy(ren, texture, NULL, &rect);
+
+        SDL_SetRenderDrawColor(ren, BACKGROUND_COLOR);
+        SDL_RenderDrawRect(ren, &rect);
+
+        x += surface->w + padding;
+
+        free(surface);
+        SDL_DestroyTexture(texture);
+
+        free(text);
+    }
+}
+
 int main()
 {
     srand(time(0));
@@ -204,6 +288,21 @@ int main()
     if (ren == NULL)
     {
         fprintf(stderr, "ERROR: Failed to create renderer: %s", SDL_GetError());
+        exit(1);
+    }
+
+    if (TTF_Init() == -1)
+    {
+        fprintf(
+            stderr, "ERROR: Failed to initalize sdl ttf: %s", SDL_GetError()
+        );
+        exit(1);
+    }
+
+    TTF_Font *font = TTF_OpenFont("./yudit.ttf", 18);
+    if (font == NULL)
+    {
+        fprintf(stderr, "ERROR: Failed to open font: %s", SDL_GetError());
         exit(1);
     }
 
@@ -330,6 +429,8 @@ int main()
 
         draw_main_bar(ren, &brush_colors, buttons, cursor);
 
+        draw_info(ren, font, &cells, points_size, mouse_x, mouse_y);
+
         for (int i = 0; i < points_size; ++i)
         {
             Point *point = points[i];
@@ -365,6 +466,7 @@ int main()
         SDL_RenderPresent(ren);
     }
 
+    TTF_CloseFont(font);
     SDL_DestroyWindow(win);
     SDL_DestroyRenderer(ren);
     SDL_Quit();
