@@ -55,7 +55,7 @@ typedef struct
 typedef struct
 {
     GridPos grid_pos;
-} Brush;
+} CursorBrush;
 
 typedef struct
 {
@@ -209,7 +209,6 @@ int main()
 
     bool is_running = true;
     SDL_Event event;
-    bool saving = false;
 
     Cells cells = {.size = 0};
     build_grid(&cells);
@@ -217,7 +216,7 @@ int main()
     Point **points  = malloc(MAX_CELLS * sizeof(Point));
     int points_size = 0;
 
-    Brush brush = {
+    CursorBrush cursor_brush = {
         .grid_pos = {
                      .row    = GRID_MIN_HEIGHT / CELL_SIZE,
                      .column = GRID_MIN_WIDTH / CELL_SIZE}
@@ -265,85 +264,6 @@ int main()
                     is_running = false;
                     break;
                 case SDL_KEYDOWN:
-                    if (saving == true)
-                        save_point(
-                            points,
-                            &points_size,
-                            &brush_colors,
-                            cells
-                                .grid[brush.grid_pos.row][brush.grid_pos.column]
-                                .x,
-
-                            cells
-                                .grid[brush.grid_pos.row][brush.grid_pos.column]
-                                .y
-                        );
-                    // Move up
-                    if (event.key.keysym.sym == 'k')
-                    {
-                        if (brush.grid_pos.row == 0)
-                        {
-                            brush.grid_pos.row = MAX_ROWS;
-                        }
-                        else
-                        {
-                            brush.grid_pos.row--;
-                        }
-                    }
-                    // Move down
-                    if (event.key.keysym.sym == 'j')
-                    {
-                        if (brush.grid_pos.row == MAX_ROWS)
-                        {
-                            brush.grid_pos.row = 0;
-                        }
-                        else
-                        {
-                            brush.grid_pos.row++;
-                        }
-                    }
-                    // Move left
-                    // FIXME: If GRID_MAX_WIDTH and GRID_MAX_HEIGHT are not 800
-                    //       going left or right skips one cell
-                    if (event.key.keysym.sym == 'h')
-                    {
-                        if (brush.grid_pos.column == 0)
-                        {
-                            brush.grid_pos.column = MAX_COLUMNS;
-                        }
-                        else
-                        {
-                            brush.grid_pos.column--;
-                        }
-                    }
-                    // Move right
-                    if (event.key.keysym.sym == 'l')
-                    {
-                        if (brush.grid_pos.column == MAX_COLUMNS)
-                        {
-                            brush.grid_pos.column = 0;
-                        }
-                        else
-                        {
-                            brush.grid_pos.column++;
-                        }
-                    }
-                    if (event.key.keysym.sym == 's')
-                    {
-                        save_point(
-                            points,
-                            &points_size,
-                            &brush_colors,
-                            cells
-                                .grid[brush.grid_pos.row][brush.grid_pos.column]
-                                .x,
-
-                            cells
-                                .grid[brush.grid_pos.row][brush.grid_pos.column]
-                                .y
-                        );
-                        saving = true;
-                    }
                     if (event.key.keysym.sym == 'c')
                         points_size = 0;
                     if (event.key.keysym.sym == 'p')
@@ -369,10 +289,6 @@ int main()
                         }
                     }
                     break;
-                case SDL_KEYUP:
-                    if (event.key.keysym.sym == 's')
-                        saving = false;
-                    break;
             }
         }
 
@@ -395,8 +311,14 @@ int main()
                     save_point(
                         points, &points_size, &brush_colors, cell.x, cell.y
                     );
-                    brush.grid_pos.row    = cell.y / CELL_SIZE;
-                    brush.grid_pos.column = cell.x / CELL_SIZE;
+                    cursor_brush.grid_pos.row    = cell.y / CELL_SIZE;
+                    cursor_brush.grid_pos.column = cell.x / CELL_SIZE;
+                }
+                else if (SDL_PointInRect(&cursor, &rect))
+                {
+                    // Follow mouse cursor
+                    cursor_brush.grid_pos.row    = cell.y / CELL_SIZE;
+                    cursor_brush.grid_pos.column = cell.x / CELL_SIZE;
                 }
             }
         }
@@ -426,19 +348,19 @@ int main()
         }
 
         SDL_Rect brush_rect = {
-            .x = cells.grid[brush.grid_pos.row][brush.grid_pos.column].x,
-            .y = cells.grid[brush.grid_pos.row][brush.grid_pos.column].y,
+            .x = cells
+                     .grid[cursor_brush.grid_pos.row]
+                          [cursor_brush.grid_pos.column]
+                     .x,
+            .y = cells
+                     .grid[cursor_brush.grid_pos.row]
+                          [cursor_brush.grid_pos.column]
+                     .y,
             .w = CELL_SIZE,
             .h = CELL_SIZE};
 
-        SDL_SetRenderDrawColor(
-            ren,
-            brush_colors.colors[brush_colors.selected].r,
-            brush_colors.colors[brush_colors.selected].g,
-            brush_colors.colors[brush_colors.selected].b,
-            brush_colors.colors[brush_colors.selected].a
-        );
-        SDL_RenderDrawRect(ren, &brush_rect);
+        SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+        SDL_RenderFillRect(ren, &brush_rect);
 
         SDL_RenderPresent(ren);
     }
