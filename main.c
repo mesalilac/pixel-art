@@ -394,6 +394,8 @@ int main()
                     save_point(
                         points, &points_size, &brush_colors, cell.x, cell.y
                     );
+                    brush.grid_pos.row    = cell.y / CELL_SIZE;
+                    brush.grid_pos.column = cell.x / CELL_SIZE;
                 }
             }
         }
