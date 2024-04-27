@@ -88,6 +88,7 @@ bool point_exists(Point **points, int *points_size, Point *point)
     return false;
 }
 
+// FIXME: Image is bigger or smaller than the canves sometimes
 void save_point(
     Point **points, int *points_size, BrushColors *brush_colors, int x, int y
 )
@@ -97,7 +98,6 @@ void save_point(
     point->y     = y;
     point->color = brush_colors->colors[brush_colors->selected];
 
-    // TODO if point exists change color
     for (int i = 0; i < *points_size; ++i)
     {
         if (points[i]->x == point->x && points[i]->y == point->y)
