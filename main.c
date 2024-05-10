@@ -134,7 +134,8 @@ void draw_grid(SDL_Renderer *ren, Cells *cells)
             Cell cell = cells->grid[row][col];
 
             SDL_Rect rect = {
-                .x = cell.x, .y = cell.y, .w = CELL_SIZE, .h = CELL_SIZE};
+                .x = cell.x, .y = cell.y, .w = CELL_SIZE, .h = CELL_SIZE
+            };
 
             SDL_SetRenderDrawColor(ren, GRID_COLOR);
             SDL_RenderDrawRect(ren, &rect);
@@ -165,7 +166,8 @@ void draw_color_blocks(
                 .x = rect.x - padding / 2,
                 .y = rect.y - padding / 2,
                 .w = CELL_SIZE + padding,
-                .h = CELL_SIZE + padding};
+                .h = CELL_SIZE + padding
+            };
 
             SDL_SetRenderDrawColor(ren, 255, 0, 0, 0);
             SDL_RenderDrawRect(ren, &selected_rect);
@@ -380,9 +382,9 @@ int main()
     int points_size = 0;
 
     CursorBrush cursor_brush = {
-        .grid_pos = {
-                     .row    = GRID_MIN_HEIGHT / CELL_SIZE,
-                     .column = GRID_MIN_WIDTH / CELL_SIZE}
+        .grid_pos =
+            {.row    = GRID_MIN_HEIGHT / CELL_SIZE,
+                       .column = GRID_MIN_WIDTH / CELL_SIZE}
     };
 
     BrushColors brush_colors = {.size = 0, .selected = 0};
@@ -470,7 +472,8 @@ int main()
                 Cell cell = cells.grid[row][col];
 
                 SDL_Rect rect = {
-                    .x = cell.x, .y = cell.y, .w = CELL_SIZE, .h = CELL_SIZE};
+                    .x = cell.x, .y = cell.y, .w = CELL_SIZE, .h = CELL_SIZE
+                };
 
                 if (SDL_PointInRect(&cursor, &rect) &&
                     (buttons & SDL_BUTTON_LMASK) != 0)
@@ -503,7 +506,8 @@ int main()
             Point *point = points[i];
 
             SDL_Rect rect = {
-                .x = point->x, .y = point->y, .w = CELL_SIZE, .h = CELL_SIZE};
+                .x = point->x, .y = point->y, .w = CELL_SIZE, .h = CELL_SIZE
+            };
 
             SDL_SetRenderDrawColor(
                 ren,
@@ -525,7 +529,8 @@ int main()
                           [cursor_brush.grid_pos.column]
                      .y,
             .w = CELL_SIZE,
-            .h = CELL_SIZE};
+            .h = CELL_SIZE
+        };
 
         SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
         SDL_RenderFillRect(ren, &brush_rect);
